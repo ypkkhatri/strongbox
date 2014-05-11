@@ -1,12 +1,5 @@
 package org.carlspring.strongbox.storage.indexing;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.maven.index.*;
 import org.apache.maven.index.context.IndexCreator;
@@ -19,6 +12,15 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.logging.LoggerManager;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
 import static java.util.Arrays.asList;
 import static org.apache.lucene.search.BooleanClause.Occur.MUST;
 import static org.apache.lucene.search.BooleanClause.Occur.MUST_NOT;
@@ -111,6 +113,7 @@ public class LocalRepositoryIndexer
         return response.getResults();
     }
 
+    @Async("indexPool")
     public int index(final File startingPath)
     {
         final ScanningResult scan = scanner.scan(new ScanningRequest(context,
