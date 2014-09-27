@@ -98,8 +98,6 @@ public class ArtifactSearchServiceImpl implements ArtifactSearchService
             {
                 for (Repository r : storage.getRepositories().values())
                 {
-                    logger.debug("Repository: {}", r.getName());
-
                     final RepositoryIndexer repositoryIndex = repositoryIndexManager.getRepositoryIndex(storage.getName() + ":" + r.getName());
                     if (repositoryIndex != null)
                     {
@@ -108,10 +106,11 @@ public class ArtifactSearchServiceImpl implements ArtifactSearchService
 
                         if (!artifactInfoResults.isEmpty())
                         {
+                            logger.debug("Repository: {}", r.getName());
+                            logger.debug("Results: {}", artifactInfoResults.size());
+
                             resultsMap.put(storage.getName() + ":" + r.getName(), artifactInfoResults);
                         }
-
-                        logger.debug("Results: {}", artifactInfoResults.size());
                     }
                 }
             }

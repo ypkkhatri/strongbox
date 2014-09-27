@@ -56,20 +56,24 @@ public class RepositoryIndexerTest
     @Test
     public void testIndex() throws Exception
     {
-        // final RepositoryIndexer i = new RepositoryIndexer("releases", REPOSITORY_BASEDIR, INDEX_DIR);
         final RepositoryIndexer repositoryIndexer = repositoryIndexManager.getRepositoryIndex("storage0:releases");
 
         final int x = repositoryIndexer.index(new File("org/carlspring/strongbox/strongbox-commons"));
 
         Assert.assertEquals("6 artifacts expected!",
-                6,  // one is jar another pom, both would be added into the same Lucene document
-                x);
+                            6,  // one is jar, another pom, both would be added into the same Lucene document
+                            x);
 
+        /*
         Set<ArtifactInfo> search = repositoryIndexer.search("org.carlspring.strongbox",
-                "strongbox-commons",
-                null,
-                null,
-                null);
+                                                            "strongbox-commons",
+                                                            null,
+                                                            null,
+                                                            null);
+        */
+
+        Set<ArtifactInfo> search = repositoryIndexer.search("g:org.carlspring.strongbox a:strongbox-commons p:pom");
+
         for (final ArtifactInfo ai : search)
         {
             System.out.println(ai.getGroupId() + " / " + ai.getArtifactId() + " / " + ai.getVersion() + " / " + ai.getDescription());

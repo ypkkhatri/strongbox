@@ -1,8 +1,5 @@
 package org.carlspring.strongbox.storage.services.impl;
 
-import org.apache.lucene.store.FSDirectory;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.index.ArtifactInfo;
 import org.carlspring.maven.commons.util.ArtifactUtils;
 import org.carlspring.strongbox.io.MultipleDigestInputStream;
 import org.carlspring.strongbox.resource.ResourceCloser;
@@ -22,10 +19,6 @@ import org.carlspring.strongbox.storage.validation.version.VersionValidationExce
 import org.carlspring.strongbox.storage.validation.version.VersionValidator;
 import org.carlspring.strongbox.util.ArtifactFileUtils;
 import org.carlspring.strongbox.util.MessageDigestUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -36,6 +29,13 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.lucene.store.FSDirectory;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.index.ArtifactInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import static org.carlspring.strongbox.util.RepositoryUtils.checkRepositoryExists;
 
 /**
@@ -161,11 +161,9 @@ public class ArtifactManagementServiceImpl
                                String path)
             throws ArtifactResolutionException
     {
-        InputStream is = null;
-
         try
         {
-            is = artifactResolutionService.getInputStream(repository, path);
+            InputStream is = artifactResolutionService.getInputStream(repository, path);
             return is;
         }
         catch (IOException e)
@@ -266,7 +264,7 @@ public class ArtifactManagementServiceImpl
         }
         else
         {
-            // TODO: Implement event triggering that handles checksums that don't match the upload file.
+            // TODO: Implement event triggering that handles checksums that don't match the uploaded file.
         }
     }
 
@@ -346,20 +344,27 @@ public class ArtifactManagementServiceImpl
 
     @Override
     public void merge(String sourceStorage,
-                      String sourceRepositoryName,
+                      String sourceRepositoryId,
                       String targetStorage,
-                      String targetRepositoryName)
+                      String targetRepositoryId)
             throws ArtifactStorageException
     {
         try
         {
-            final RepositoryIndexer sourceIndex = repositoryIndexManager
-                    .getRepositoryIndex(sourceStorage + ":" + sourceRepositoryName);
-            if (sourceIndex == null) throw new ArtifactStorageException("source repo not found");
+            final RepositoryIndexer sourceIndex = repositoryIndexManager.getRepositoryIndex(sourceStorage + ":" +
+                                                                                            sourceRepositoryId);
+            if (sourceIndex == null)
+            {
+                throw new ArtifactStorageException("Source repositoryId not found!");
+            }
 
-            final RepositoryIndexer targetIndex = repositoryIndexManager
-                    .getRepositoryIndex(targetStorage + ":" + targetRepositoryName);
-            if (targetIndex == null) throw new ArtifactStorageException("target repo not found");
+            final RepositoryIndexer targetIndex = repositoryIndexManager.getRepositoryIndex(targetStorage + ":" +
+                                                                                            targetRepositoryId);
+
+            if (targetIndex == null)
+            {
+                throw new ArtifactStorageException("Target repositoryId not found!");
+            }
 
             targetIndex.getIndexingContext().merge(FSDirectory.open(sourceIndex.getIndexDir()));
         }
@@ -368,4 +373,5 @@ public class ArtifactManagementServiceImpl
             throw new ArtifactStorageException(e.getMessage(), e);
         }
     }
+
 }

@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.maven.index.ArtifactContextProducer;
 import org.apache.maven.index.Indexer;
 import org.apache.maven.index.Scanner;
 import org.apache.maven.index.context.IndexCreator;
@@ -23,6 +24,8 @@ public class RepositoryIndexerFactory
     private static final Logger logger = LoggerFactory.getLogger(RepositoryIndexerFactory.class);
 
     private IndexerConfiguration indexerConfiguration;
+
+    private ArtifactContextProducer artifactContextProducer;
 
 
     @Inject
@@ -43,6 +46,7 @@ public class RepositoryIndexerFactory
         repositoryIndexer.setIndexingContext(createIndexingContext(repositoryId, repositoryBasedir, indexDir));
         repositoryIndexer.setIndexer(indexerConfiguration.getIndexer());
         repositoryIndexer.setScanner(indexerConfiguration.getScanner());
+        repositoryIndexer.setArtifactContextProducer(artifactContextProducer);
 
         logger.debug("Repository indexer created; id: {}; dir: {}", repositoryId, indexDir);
 
@@ -91,6 +95,16 @@ public class RepositoryIndexerFactory
     public Map<String, IndexCreator> getIndexers()
     {
         return indexerConfiguration.getIndexers();
+    }
+
+    public ArtifactContextProducer getArtifactContextProducer()
+    {
+        return artifactContextProducer;
+    }
+
+    public void setArtifactContextProducer(ArtifactContextProducer artifactContextProducer)
+    {
+        this.artifactContextProducer = artifactContextProducer;
     }
 
 }

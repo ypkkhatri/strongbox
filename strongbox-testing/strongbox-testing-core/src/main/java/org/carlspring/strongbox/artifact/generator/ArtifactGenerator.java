@@ -172,7 +172,7 @@ public class ArtifactGenerator
         model.setGroupId(artifact.getGroupId());
         model.setArtifactId(artifact.getArtifactId());
         model.setVersion(artifact.getVersion());
-        model.setPackaging(artifact.getType()); // This is not exactly correct.
+        model.setPackaging("jar"); // This is not exactly correct.
 
         logger.info("Generating pom file for " + artifact.toString() + "...");
 

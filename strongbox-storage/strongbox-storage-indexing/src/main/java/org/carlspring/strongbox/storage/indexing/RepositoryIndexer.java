@@ -43,6 +43,8 @@ public class RepositoryIndexer
 
     private IndexingContext indexingContext;
 
+    private ArtifactContextProducer artifactContextProducer;
+
     private String repositoryId;
 
     private File repositoryBasedir;
@@ -131,7 +133,7 @@ public class RepositoryIndexer
 
         final FlatSearchResponse response = getIndexer().searchFlat(new FlatSearchRequest(query, indexingContext));
 
-        logger.info("Hit count: {}", response.getReturnedHitsCount());
+        logger.debug("Hit count: {}", response.getReturnedHitsCount());
 
         final Set<ArtifactInfo> results = response.getResults();
         if (logger.isDebugEnabled())
@@ -158,7 +160,7 @@ public class RepositoryIndexer
 
         final FlatSearchResponse response = getIndexer().searchFlat(new FlatSearchRequest(query, indexingContext));
 
-        logger.info("Hit count: {}", response.getReturnedHitsCount());
+        logger.debug("Hit count: {}", response.getReturnedHitsCount());
 
         final Set<ArtifactInfo> results = response.getResults();
         if (logger.isDebugEnabled())
@@ -184,7 +186,7 @@ public class RepositoryIndexer
                                    indexingContext.getIndexDirectory().toString() });
 
         final FlatSearchResponse response = getIndexer().searchFlat(new FlatSearchRequest(query, indexingContext));
-        logger.info("Hit count: {}", response.getReturnedHitsCount());
+        logger.debug("Hit count: {}", response.getReturnedHitsCount());
 
         final Set<ArtifactInfo> results = response.getResults();
         if (logger.isDebugEnabled())
@@ -218,25 +220,23 @@ public class RepositoryIndexer
                                    final Artifact artifact)
             throws IOException
     {
-        ArtifactInfo artifactInfo = new ArtifactInfo(repository,
-                                                     artifact.getGroupId(),
-                                                     artifact.getArtifactId(),
-                                                     artifact.getVersion(),
-                                                     artifact.getType(),
-                                                     artifact.getClassifier());
-        if (artifact.getType() != null)
+        try
         {
-            artifactInfo.setFieldValue(MAVEN.PACKAGING, artifact.getType());
+            ArtifactContext artifactContext = artifactContextProducer.getArtifactContext(indexingContext,
+                                                                                         artifactFile.getAbsoluteFile());
+
+            // ArtifactInfo ai = artifactContext.getArtifactInfo();
+
+            getIndexer().addArtifactsToIndex(asList(artifactContext), indexingContext);
+
+            logger.debug("Added artifact: {}; repo: {}; type: {}", new String[]{ artifact.toString(),
+                                                                                 repository,
+                                                                                 artifact.getType() });
         }
-
-        logger.info("adding artifact: {}; repo: {}; type: {}", new String[] { artifactInfo.getUinfo(),
-                                                                              repository, artifact.getType() });
-
-        getIndexer().addArtifactsToIndex(asList(new ArtifactContext(null,
-                                                                    artifactFile,
-                                                                    null,
-                                                                    artifactInfo,
-                                                                    artifactInfo.calculateGav())), indexingContext);
+        catch (IllegalArgumentException e)
+        {
+            // Do not add this to the index.
+        }
     }
 
     private class ReindexArtifactScanningListener
@@ -266,7 +266,7 @@ public class RepositoryIndexer
         public void artifactError(final ArtifactContext ac,
                                   final Exception ex)
         {
-            logger.error("artifact error", ex);
+            logger.error("Artifact error", ex);
         }
 
         @Override
@@ -275,7 +275,11 @@ public class RepositoryIndexer
             try
             {
                 logger.debug("Adding artifact gav: {}; ctx id: {}; idx dir: {}",
-                             new String[]{ ac.getGav().toString(),
+                             new String[]{ ac.getGav().getGroupId() + ":" +
+                                           ac.getGav().getArtifactId() + ":" +
+                                           ac.getGav().getVersion() + ":" +
+                                           ac.getGav().getClassifier() + ":" +
+                                           ac.getGav().getExtension(),
                                            context.getId(),
                                            context.getIndexDirectory().toString() });
 
@@ -337,6 +341,16 @@ public class RepositoryIndexer
     public void setIndexingContext(IndexingContext indexingContext)
     {
         this.indexingContext = indexingContext;
+    }
+
+    public ArtifactContextProducer getArtifactContextProducer()
+    {
+        return artifactContextProducer;
+    }
+
+    public void setArtifactContextProducer(ArtifactContextProducer artifactContextProducer)
+    {
+        this.artifactContextProducer = artifactContextProducer;
     }
 
     public String getRepositoryId()

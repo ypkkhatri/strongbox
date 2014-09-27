@@ -9,7 +9,9 @@
 
     <bean id="indexerConfiguration" class="org.carlspring.strongbox.storage.indexing.IndexerConfiguration"/>
 
-    <bean id="repositoryIndexerFactory" class="org.carlspring.strongbox.storage.indexing.RepositoryIndexerFactory"/>
+    <bean id="repositoryIndexerFactory" class="org.carlspring.strongbox.storage.indexing.RepositoryIndexerFactory">
+        <property name="artifactContextProducer" ref="artifactContextProducer"/>
+    </bean>
 
     <bean id="repositoryIndexManager" class="org.carlspring.strongbox.storage.indexing.RepositoryIndexManager"/>
 
