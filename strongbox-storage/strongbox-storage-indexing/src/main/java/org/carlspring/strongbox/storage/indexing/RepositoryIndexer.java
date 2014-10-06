@@ -94,6 +94,35 @@ public class RepositoryIndexer
                                     final String classifier)
             throws IOException
     {
+        final BooleanQuery query = getQueryFromPlainText(groupId, artifactId, version, packaging, classifier);
+
+        logger.debug("Executing search query: {}; ctx id: {}; idx dir: {}",
+                     new String[]{ query.toString(),
+                                   indexingContext.getId(),
+                                   indexingContext.getIndexDirectory().toString() });
+
+        final FlatSearchResponse response = getIndexer().searchFlat(new FlatSearchRequest(query, indexingContext));
+
+        logger.debug("Hit count: {}", response.getReturnedHitsCount());
+
+        final Set<ArtifactInfo> results = response.getResults();
+        if (logger.isDebugEnabled())
+        {
+            for (final ArtifactInfo result : results)
+            {
+                logger.debug("Found artifact: {}", result.toString());
+            }
+        }
+
+        return results;
+    }
+
+    public BooleanQuery getQueryFromPlainText(String groupId,
+                                              String artifactId,
+                                              String version,
+                                              String packaging,
+                                              String classifier)
+    {
         final BooleanQuery query = new BooleanQuery();
 
         if (groupId != null)
@@ -126,25 +155,7 @@ public class RepositoryIndexer
             query.add(getIndexer().constructQuery(MAVEN.CLASSIFIER, new SourcedSearchExpression(classifier)), MUST);
         }
 
-        logger.debug("Executing search query: {}; ctx id: {}; idx dir: {}",
-                     new String[]{ query.toString(),
-                                   indexingContext.getId(),
-                                   indexingContext.getIndexDirectory().toString() });
-
-        final FlatSearchResponse response = getIndexer().searchFlat(new FlatSearchRequest(query, indexingContext));
-
-        logger.debug("Hit count: {}", response.getReturnedHitsCount());
-
-        final Set<ArtifactInfo> results = response.getResults();
-        if (logger.isDebugEnabled())
-        {
-            for (final ArtifactInfo result : results)
-            {
-                logger.debug("Found artifact: {}", result.toString());
-            }
-        }
-
-        return results;
+        return query;
     }
 
     public Set<ArtifactInfo> search(final String queryText)
