@@ -13,17 +13,17 @@
         </encoder>
     </appender>
 
-    <logger name="org.springframework">
-        <level value="ERROR"/>
+    <logger name="org.carlspring.strongbox">
+        <level value="DEBUG"/>
     </logger>
 
     <logger name="org.apache.commons.httpclient">
         <level value="INFO"/>
     </logger>
-    <logger name="org.carlspring.strongbox">
-        <level value="DEBUG"/>
-    </logger>
     <logger name="org.glassfish.jersey">
+        <level value="ERROR"/>
+    </logger>
+    <logger name="org.springframework">
         <level value="ERROR"/>
     </logger>
 
